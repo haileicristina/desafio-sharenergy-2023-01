@@ -1,0 +1,43 @@
+version: '3'
+
+services:
+    
+    db-mongo:
+        image: mongo:latest
+        container_name: db-mongo
+        restart: always
+        env_file:
+            - .env
+        ports:
+            - '${DB_MONGO_PORT}:${DB_MONGO_PORT}'
+        volumes:
+            - db-mongo:/data/db
+        environment:
+            MONGO_INITDB_USERNAME: ${DB_MONGO_USERNAME}
+            MONGO_INITDB_PASSWORD: ${DB_MONGO_PASSWORD}
+            MONGO_INITDB_DATABASE: ${DB_MONGO_DATABASE}
+            MONGO_URI: mongodb://mongouser:mongopass@mongodb:27017/
+
+    
+    web:
+        container_name: web
+        build: .        
+        restart: always
+        env_file:
+            - .env        
+        links:
+            - db-mongo
+        ports:
+            - ${APP_PORT}:${APP_PORT}
+        command: npm run start
+        depends_on:
+            - db-mongo
+           
+
+    nginx:
+        image: nginx:1.21
+        ports:
+            - "8082:8082"
+volumes:
+    db-mongo: {}
+   
